@@ -17,22 +17,38 @@ namespace JwtAuthDotNet9.Services
         public async Task<TokenResponseDto?> LoginAsync(UserDto request)
         {
             var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-            
+
             if (user is null)
             {
                 return null;
             }
-           
+
             if (new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
             {
                 return null;
             }
-            var response=new TokenResponseDto
-            { AccessToken=CreateToken(user),
-              RefreshToken= await GenerateAndSaveRefreshTokenAsync(user)
+            return await CreateTokenResponse(user);
+
+       
+        }
+
+        private async Task<TokenResponseDto> CreateTokenResponse(User user)
+        {
+            return new TokenResponseDto
+            {
+                AccessToken = CreateToken(user),
+                RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
             };
-        
-            return response;
+        }
+
+        private async Task<User?> ValidateRefreshTokenAsync(Guid userId,string refreshToken)
+        {
+            var user=await context.Users.FirstOrDefaultAsync(u=>u.Id==userId);
+            if (user is null|| user.RefreshToken!=refreshToken || user.RefreshTokenExpiryTime<=DateTime.UtcNow)
+            {
+                return null;
+            }
+            return user;
         }
         private string GeneraeRefreshToken()
         {
@@ -95,6 +111,18 @@ namespace JwtAuthDotNet9.Services
             context.Users.Add(user);
            await  context.SaveChangesAsync();
             return user;
+        }
+
+        public async Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request)
+        {
+            var user =await ValidateRefreshTokenAsync(request.UserId,request.RefreshToken);
+            if (user is null)
+            {
+                return null;
+                
+            }
+            return await CreateTokenResponse(user); 
+
         }
     }
 }

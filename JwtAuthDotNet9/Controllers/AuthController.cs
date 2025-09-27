@@ -102,6 +102,16 @@ namespace JwtAuthDotNet9.Controllers
             return Ok("You are Admin!");
 
         }
+        [HttpPost("refresh-token")])]
+        public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto request)
+        {
+            var result = await authService.RefreshTokenAsync(request);
+            if(result is null || result.AccessToken is null || result.RefreshToken is null)
+            {
+                return Unauthorized("Invalid refresh token.");
+            }
+            return Ok(result);
+        }
     }
 }
  
