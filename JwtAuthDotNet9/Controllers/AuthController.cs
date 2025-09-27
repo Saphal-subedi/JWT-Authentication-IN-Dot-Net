@@ -93,6 +93,15 @@ namespace JwtAuthDotNet9.Controllers
             return Ok("You are authorized!");
 
         }
+        ////If you want multiple roles for the user then you can user [Authorize(Roles ="Admin,User")]
+        [Authorize(Roles = "Admin")]
+        [HttpGet("checkadmin")]
+        public IActionResult CheckAdminOrNot()
+        {
+
+            return Ok("You are Admin!");
+
+        }
     }
 }
  

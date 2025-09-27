@@ -34,7 +34,8 @@ namespace JwtAuthDotNet9.Services
             {
                 ////Here this time we have name so we are using name here otherwise we will be using ID here
                 new Claim(ClaimTypes.Name,user.Username),
-                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString())
+                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
+                new Claim(ClaimTypes.Role,user.Role.ToString())
             };
 
             ////For Adding this methods we need to add   System.IdentityModel.Tokens.Jwt package from Nuget Package Manager 
