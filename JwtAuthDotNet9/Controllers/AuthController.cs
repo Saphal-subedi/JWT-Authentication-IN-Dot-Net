@@ -1,6 +1,7 @@
 ﻿using JwtAuthDotNet9.Entities;
 using JwtAuthDotNet9.Models;
 using JwtAuthDotNet9.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -84,5 +85,14 @@ namespace JwtAuthDotNet9.Controllers
                 );
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
+        [Authorize]
+        [HttpGet]
+        public IActionResult CheckAuthorization()
+        {
+
+            return Ok("You are authorized!");
+
+        }
     }
 }
+ 
