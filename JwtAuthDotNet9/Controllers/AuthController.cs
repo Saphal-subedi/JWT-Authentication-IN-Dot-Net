@@ -1,5 +1,6 @@
 ﻿using JwtAuthDotNet9.Entities;
 using JwtAuthDotNet9.Models;
+using JwtAuthDotNet9.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,37 +8,51 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace JwtAuthDotNet9.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IConfiguration configuration) : ControllerBase
+    public class AuthController(IAuthService authService,IConfiguration configuration) : ControllerBase
     {
         public static User user = new();
         [HttpPost("register")]
         ////This method returns user and hashed password and while working we save hashed value in database and while authenticating we compare database and its hashed value.
-        public ActionResult<User> Register(UserDto request)
+        public async Task<ActionResult<User>> Register(UserDto request)
         {
-            var hashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password);
-            user.Username = request.Username;
-            user.PasswordHash = hashedPassword;
+            //var hashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password);
+            //user.Username = request.Username;
+            //user.PasswordHash = hashedPassword;
+            //return Ok(user);
+            var user =await authService.RegisterAsync(request);
+            if(user is null)
+            {
+                return BadRequest("User already exists.");
+            }   
             return Ok(user);
 
         }
 
         [HttpPost("login")]
-        public ActionResult<string> Login(UserDto request)
+        public async Task<ActionResult<string>> Login(UserDto request)
         {
-            if(user.Username!=request.Username)
+            //if(user.Username!=request.Username)
+            //{
+            //    return BadRequest("User not found");
+            //}
+            //if(new PasswordHasher<User>().VerifyHashedPassword(user,user.PasswordHash,request.Password)==PasswordVerificationResult.Failed )
+            //{
+            //    return BadRequest("Wrong password.");
+            //}
+            //string token = CreateToken(user);
+            //return Ok(token);
+
+            var token = await authService.LoginAsync(request);
+            if(token is null)
             {
-                return BadRequest("User not found");
+                return BadRequest("Invalid username or password.");
             }
-            if(new PasswordHasher<User>().VerifyHashedPassword(user,user.PasswordHash,request.Password)==PasswordVerificationResult.Failed )
-            {
-                return BadRequest("Wrong password.");
-            }
-            string token = CreateToken(user);
             return Ok(token);
         }
         private string CreateToken(User user)
