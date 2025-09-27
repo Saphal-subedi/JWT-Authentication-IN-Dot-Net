@@ -7,13 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace JwtAuthDotNet9.Services
 {
     public class AuthService(UserDbContext context,IConfiguration configuration) : IAuthService
     {
-        public async Task<string?> LoginAsync(UserDto request)
+        public async Task<TokenResponseDto?> LoginAsync(UserDto request)
         {
             var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
             
@@ -26,7 +27,27 @@ namespace JwtAuthDotNet9.Services
             {
                 return null;
             }
-            return CreateToken(user);
+            var response=new TokenResponseDto
+            { AccessToken=CreateToken(user),
+              RefreshToken= await GenerateAndSaveRefreshTokenAsync(user)
+            };
+        
+            return response;
+        }
+        private string GeneraeRefreshToken()
+        {
+                       var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
+        }
+        private async Task<string> GenerateAndSaveRefreshTokenAsync(User user)
+        {
+            var refreshToken = GeneraeRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+            await context.SaveChangesAsync();
+            return refreshToken;
         }
         private string CreateToken(User user)
         {

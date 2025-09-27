@@ -32,6 +32,12 @@ namespace JwtAuthDotNet9.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

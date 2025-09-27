@@ -36,7 +36,7 @@ namespace JwtAuthDotNet9.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
+        public async Task<ActionResult<TokenResponseDto>> Login(UserDto request)
         {
             //if(user.Username!=request.Username)
             //{
@@ -49,12 +49,12 @@ namespace JwtAuthDotNet9.Controllers
             //string token = CreateToken(user);
             //return Ok(token);
 
-            var token = await authService.LoginAsync(request);
-            if(token is null)
+            var result = await authService.LoginAsync(request);
+            if(result is null)
             {
                 return BadRequest("Invalid username or password.");
             }
-            return Ok(token);
+            return Ok(result);
         }
         private string CreateToken(User user)
         {
